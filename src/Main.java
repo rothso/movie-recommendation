@@ -28,6 +28,7 @@ public class Main {
       db.insert("movie_directors", "data/director_relations.csv");
       db.insert("movie_actors", "data/actor_relations.csv");
     } catch (BatchUpdateException e) {
+      e.printStackTrace();
       // Data is already inserted, silently ignore...
     }
 
@@ -44,7 +45,7 @@ public class Main {
     System.out.println("Goodbye!");
 
     // Drop the database
-    db.close();
+    //db.close();
   }
 
   private static void showMenu() {
@@ -74,10 +75,10 @@ class MoviesDatabase implements Closeable {
     stmt.execute("CREATE TABLE IF NOT EXISTS movies\n" +
         "(\n" +
         "    id           INT UNSIGNED PRIMARY KEY,\n" +
+        "    title        VARCHAR(255) NOT NULL,\n" +
         "    popularity   FLOAT        NOT NULL,\n" +
         "    vote_average FLOAT        NOT NULL,\n" +
-        "    vote_count   INT          NOT NULL,\n" +
-        "    title        VARCHAR(255) NOT NULL UNIQUE\n" +
+        "    vote_count   INT          NOT NULL\n" +
         ")");
 
     stmt.execute("CREATE TABLE IF NOT EXISTS movie_genres\n" +
@@ -126,8 +127,9 @@ class MoviesDatabase implements Closeable {
 
     // Insert using data from the file
     Scanner scanner = new Scanner(file);
+    scanner.nextLine(); // skip header row
     while (scanner.hasNextLine()) {
-      String[] cols = scanner.nextLine().split(",", -1);
+      String[] cols = scanner.nextLine().split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
       for (int i = 0; i < nCols; i++) {
         String val = cols[i].replace("\"", "");
         if (val.equals("true")) insert.setBoolean(i + 1, true);

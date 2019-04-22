@@ -4,10 +4,10 @@ USE imdb;
 CREATE TABLE IF NOT EXISTS movies
 (
     id           INT UNSIGNED PRIMARY KEY,
+    title        VARCHAR(255) NOT NULL,
     popularity   FLOAT        NOT NULL,
     vote_average FLOAT        NOT NULL,
-    vote_count   INT          NOT NULL,
-    title        VARCHAR(255) NOT NULL UNIQUE
+    vote_count   INT          NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS movie_genres
