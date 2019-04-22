@@ -103,7 +103,7 @@ class MoviesDatabase implements Closeable {
         "    FOREIGN KEY (movie_id) REFERENCES movies (id)\n" +
         ")");
 
-    boolean z = stmt.execute("CREATE TABLE IF NOT EXISTS movie_directors\n" +
+    stmt.execute("CREATE TABLE IF NOT EXISTS movie_directors\n" +
         "(\n" +
         "    movie_id INT UNSIGNED PRIMARY KEY,\n" +
         "    director_id INT UNSIGNED,\n" +
