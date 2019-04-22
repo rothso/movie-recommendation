@@ -7,7 +7,9 @@ SET @ID = (SELECT id
 
 SELECT title
 FROM (SELECT t1.movie_id, title, POWER(vote_average, 2) * vote_count as score
-      FROM (SELECT id, title, popularity, vote_average, vote_count FROM movies WHERE id != @ID) t0
+      FROM (SELECT id, title, popularity, vote_average, vote_count
+            FROM movies
+            WHERE id != @ID) t0
              LEFT JOIN
            (SELECT movie_id, COUNT(*) as genre_similarity
             FROM movie_genres
