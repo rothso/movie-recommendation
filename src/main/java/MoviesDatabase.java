@@ -116,6 +116,14 @@ public class MoviesDatabase implements Closeable {
     return rs.first() ? Optional.of(rs.getInt("id")) : Optional.empty();
   }
 
+  ArrayList<String> getAllMovies() throws SQLException {
+    ResultSet rs = stmt.executeQuery("SELECT title FROM movies");
+    ArrayList<String> titles = new ArrayList<>();
+    while (rs.next())
+      titles.add(rs.getString("title"));
+    return titles;
+  }
+
   ArrayList<String> getRecommendedMovies(int movieId) throws SQLException {
     ResultSet rs = stmt.executeQuery(
         "SELECT title\n" +

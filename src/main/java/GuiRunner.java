@@ -4,13 +4,16 @@ import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -20,10 +23,12 @@ import javafx.stage.Stage;
 
 public class GuiRunner extends Application {
   private MoviesDatabase db;
+  private ArrayList<String> allMovies;
 
   {
     try {
       db = new MoviesDatabase();
+      allMovies = db.getAllMovies();
     } catch (SQLException e) {
       e.printStackTrace();
     }
@@ -61,7 +66,7 @@ public class GuiRunner extends Application {
     cc1.setHgrow(Priority.NEVER);
     ColumnConstraints cc2 = new ColumnConstraints();
     cc2.setHgrow(Priority.ALWAYS);
-    pane.getColumnConstraints().addAll(cc1, cc2);
+    pane.getColumnConstraints().addAll(cc1, cc2, cc1);
 
     RowConstraints rc1 = new RowConstraints();
     rc1.setVgrow(Priority.NEVER);
@@ -71,7 +76,9 @@ public class GuiRunner extends Application {
 
     // Search view
     Label label = new Label("Movie: ");
-    TextField field = new TextField();
+    ObservableList<String> data = FXCollections.observableArrayList(allMovies);
+    ComboBox<String> comboBox = new ComboBox<>(data);
+    comboBox.setMaxWidth(Double.MAX_VALUE);
     Button submitBtn = new Button("Get Recommendations");
 
     // Results view
@@ -79,15 +86,28 @@ public class GuiRunner extends Application {
     view.setMouseTransparent(true);
     view.setFocusTraversable(false);
 
-    submitBtn.setOnAction(event -> populate(field.getText(), view));
-    field.setOnKeyPressed(event -> {
+    // Add autocomplete
+    Autocomplete.addAutoComplete(comboBox,
+        (t, i) -> i.toLowerCase().contains(t.toLowerCase()) || i.equals(t));
+
+    // Bug fix: prevent space from autoselecting
+    ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<>(comboBox);
+    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+      if (event.getCode() == KeyCode.SPACE) {
+        event.consume();
+      }
+    });
+    comboBox.setSkin(comboBoxListViewSkin);
+
+    submitBtn.setOnAction(event -> populate(Autocomplete.getText(comboBox), view));
+    comboBox.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
       if (event.getCode() == KeyCode.ENTER) {
-        populate(field.getText(), view);
+        populate(Autocomplete.getText(comboBox), view);
       }
     });
 
     pane.add(label, 0, 0);
-    pane.add(field, 1, 0, 2, 1);
+    pane.add(comboBox, 1, 0, 2, 1);
     pane.add(submitBtn, 3, 0);
     pane.add(view, 0, 1, 4, 2);
 
