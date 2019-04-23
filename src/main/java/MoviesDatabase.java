@@ -1,7 +1,6 @@
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,55 +11,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Scanner;
 
-/**
- * @author Rothanak So
- */
-public class Main {
-
-  public static void main(String[] args) throws Exception {
-    // Create the database
-    MoviesDatabase db = new MoviesDatabase();
-    System.out.println("Connecting to database...");
-
-    // Insert data into the database
-    db.createSchema();
-    try {
-      db.insert("movies", "data/movies.csv");
-      db.insert("movie_genres", "data/genre_relations.csv");
-      db.insert("movie_keywords", "data/keyword_relations.csv");
-      db.insert("movie_directors", "data/director_relations.csv");
-      db.insert("movie_actors", "data/actor_relations.csv");
-    } catch (BatchUpdateException e) {
-      // Data is already inserted, silently ignore...
-    }
-
-    // Query the database
-    String option;
-    Scanner input = new Scanner(System.in);
-    showMenu();
-    while (!(option = input.nextLine()).equals("")) {
-      Optional<Integer> movieId = db.getMovieId(option);
-      if (movieId.isPresent()) {
-        db.getRecommendedMovies(movieId.get());
-      } else {
-        System.out.println("Could not find a movie containing \"" + option + "\" in the title");
-      }
-      showMenu();
-    }
-
-    // Print an exit message
-    System.out.println("Goodbye!");
-
-    // Drop the database
-    //db.close();
-  }
-
-  private static void showMenu() {
-    System.out.println("\nEnter a movie name: ");
-  }
-}
-
-class MoviesDatabase implements Closeable {
+public class MoviesDatabase implements Closeable {
   private static final String DB_NAME = "imdb";
   private static final String DB_URL = "jdbc:mysql://localhost:3306/?useSSL=false";
   private static final String USER = "root";
