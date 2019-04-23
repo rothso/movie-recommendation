@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Scanner;
@@ -115,7 +116,7 @@ public class MoviesDatabase implements Closeable {
     return rs.first() ? Optional.of(rs.getInt("id")) : Optional.empty();
   }
 
-  void getRecommendedMovies(int movieId) throws SQLException {
+  ArrayList<String> getRecommendedMovies(int movieId) throws SQLException {
     ResultSet rs = stmt.executeQuery(
         "SELECT title\n" +
             "FROM (SELECT t1.movie_id, title, POWER(vote_average, 2) * vote_count as score\n" +
@@ -168,11 +169,10 @@ public class MoviesDatabase implements Closeable {
             "ORDER BY score DESC\n" +
             "LIMIT 5"
     );
-    int i = 1;
-    System.out.printf("    %-20s\n", "Movie");
-    while (rs.next()) {
-      System.out.printf("%-3d %-20s\n", i++, rs.getString("title"));
-    }
+    ArrayList<String> titles = new ArrayList<>();
+    while (rs.next())
+      titles.add(rs.getString("title"));
+    return titles;
   }
 
   @Override

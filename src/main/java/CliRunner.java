@@ -1,4 +1,5 @@
 import java.sql.BatchUpdateException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -31,7 +32,8 @@ public class CliRunner {
     while (!(option = input.nextLine()).equals("")) {
       Optional<Integer> movieId = db.getMovieId(option);
       if (movieId.isPresent()) {
-        db.getRecommendedMovies(movieId.get());
+        ArrayList<String> titles = db.getRecommendedMovies(movieId.get());
+        titles.forEach(title -> System.out.printf("%-20s\n", title));
       } else {
         System.out.println("Could not find a movie containing \"" + option + "\" in the title");
       }

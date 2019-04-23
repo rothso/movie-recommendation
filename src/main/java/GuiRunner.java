@@ -1,10 +1,16 @@
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Optional;
+
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -13,6 +19,15 @@ import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
 
 public class GuiRunner extends Application {
+  private MoviesDatabase db;
+
+  {
+    try {
+      db = new MoviesDatabase();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
 
   @Override
   public void start(Stage primaryStage) {
@@ -20,6 +35,20 @@ public class GuiRunner extends Application {
     primaryStage.setTitle("Hello World");
     primaryStage.setScene(scene);
     primaryStage.show();
+  }
+
+  private void populate(String inputMovie, ListView<String> listView) {
+    try {
+      Optional<Integer> movieId = db.getMovieId(inputMovie);
+      if (movieId.isPresent()) {
+        ArrayList<String> titles = db.getRecommendedMovies(movieId.get());
+        listView.setItems(FXCollections.observableArrayList(titles));
+      } else {
+        listView.setItems(null);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   private Pane getPane() {
@@ -49,6 +78,13 @@ public class GuiRunner extends Application {
     ListView<String> view = new ListView<>();
     view.setMouseTransparent(true);
     view.setFocusTraversable(false);
+
+    submitBtn.setOnAction(event -> populate(field.getText(), view));
+    field.setOnKeyPressed(event -> {
+      if (event.getCode() == KeyCode.ENTER) {
+        populate(field.getText(), view);
+      }
+    });
 
     pane.add(label, 0, 0);
     pane.add(field, 1, 0, 2, 1);
